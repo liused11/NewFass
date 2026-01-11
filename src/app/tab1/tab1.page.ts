@@ -594,7 +594,7 @@ export class Tab1Page implements OnInit, OnDestroy, AfterViewInit {
         lot: lot,
         initialType: this.selectedTab === 'all' ? 'normal' : this.selectedTab
       },
-      initialBreakpoint: 0.5,
+      initialBreakpoint: 0.95,
       breakpoints: [0, 0.5, 0.95],
       backdropDismiss: true,
       showBackdrop: true,

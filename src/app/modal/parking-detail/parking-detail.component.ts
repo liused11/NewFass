@@ -98,7 +98,8 @@ export class ParkingDetailComponent implements OnInit {
   generateMockFloorZoneData() {
     this.floorData = [];
     const floors = (this.lot.floors && this.lot.floors.length > 0) ? this.lot.floors : ['F1', 'F2'];
-    const zoneNames = ['Zone A', 'Zone B', 'Zone C', 'Zone D'];
+    // Mock 9 zones for testing
+    const zoneNames = ['Zone A', 'Zone B', 'Zone C', 'Zone D', 'Zone E', 'Zone F', 'Zone G', 'Zone H', 'Zone I'];
 
     let totalAvail = this.getCurrentAvailable();
 
