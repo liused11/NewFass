@@ -1,0 +1,198 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="main-header">
+    <ion-title>การจองของฉัน</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filter Dropdowns Row -->
+  <div class="filter-row">
+    <!-- Date/Month Filter -->
+    <div class="filter-dropdown">
+      <ion-icon name="calendar-outline" class="start-icon"></ion-icon>
+      <span class="filter-text">{{ selectedMonth }}</span>
+      <ion-icon name="chevron-down-outline" class="end-icon"></ion-icon>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="filter-dropdown">
+      <ion-icon name="layers-outline" class="start-icon"></ion-icon>
+      <span class="filter-text">รายการทั้งหมด</span>
+      <ion-icon name="chevron-down-outline" class="end-icon"></ion-icon>
+    </div>
+  </div>
+
+  <!-- Status Tabs -->
+  <ion-toolbar class="segment-toolbar">
+    <ion-segment [(ngModel)]="selectedStatusSegment" (ionChange)="segmentChanged($event)" mode="md"
+      class="custom-segment">
+      <ion-segment-button value="in_progress">
+        <ion-label>กำลังดำเนินการ</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="completed">
+        <ion-label>เสร็จสิ้น</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cancelled">
+        <ion-label>ยกเลิก/ล้มเหลว</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="main-content">
+  <div class="content-wrapper">
+
+    <!-- 1. Latest Bookings -->
+    <div class="section-group">
+      <div class="section-header">
+        <h3>รายการล่าสุด</h3>
+      </div>
+      <div *ngFor="let item of latestBookings" class="modern-card">
+        <div class="card-body">
+          <!-- Top Row -->
+          <div class="card-row top-row">
+            <!-- TL: Status -->
+            <div class="status-box" [ngClass]="getStatusClass(item)">
+              <ion-icon name="car-sport"></ion-icon> {{ item.statusLabel }}
+            </div>
+            <!-- TR: Time -->
+            <div class="time-box text-right">
+              <div class="date-text">{{ item.bookingTime | date:'EEE d MMM' }}</div> <!-- e.g. พฤ. 4 ธ.ค. -->
+              <div class="time-text">{{ item.bookingTime | date:'HH:mm' }} - {{ item.endTime | date:'HH:mm' }} น.</div>
+            </div>
+          </div>
+
+          <!-- Bottom Row -->
+          <div class="card-row bottom-row">
+            <!-- BL: Location -->
+            <div class="location-box">
+              <div class="place-sub">{{ item.placeName }}</div>
+              <div class="place-main">
+                <!-- Splitting visual logic: "ชั้น 1 | โซน B | B04" -->
+                <span class="floor-zone">{{ item.locationDetails.split('|')[0] }} | {{
+                  item.locationDetails.split('|')[1] }}</span>
+                <span class="slot-badge"> | {{ item.locationDetails.split('|')[2] }}</span>
+              </div>
+            </div>
+            <!-- BR: Car / User -->
+            <div class="car-box text-right">
+              <div class="car-model"><ion-icon name="car"></ion-icon> {{ item.carBrand }}</div>
+              <div class="plate-text">{{ item.licensePlate }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer footer-blue"> <!-- Default Blue for Latest as per image -->
+          <div class="price-section">
+            <ion-icon name="wallet-outline"></ion-icon> ฿{{ item.price }}
+            <span *ngIf="item.discountBadge" class="discount-badge">{{ item.discountBadge }}</span>
+          </div>
+          <div class="action-btn">
+            ชำระเงินตอนนี้ ->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Flat 24h Bookings -->
+    <div class="section-group">
+      <div class="section-header">
+        <h3>รายการเหมาจ่าย 24 ชั่วโมง</h3>
+      </div>
+      <div *ngFor="let item of flat24Bookings" class="modern-card">
+        <div class="card-body">
+          <div class="card-row top-row">
+            <div class="status-box" [ngClass]="getStatusClass(item)">
+              <ion-icon name="car-sport"></ion-icon> {{ item.statusLabel }}
+            </div>
+            <div class="time-box text-right">
+              <div class="date-text">{{ item.bookingTime | date:'EEE d MMM' }}</div>
+              <div class="time-text">{{ item.periodLabel }}</div>
+            </div>
+          </div>
+          <div class="card-row bottom-row">
+            <div class="location-box">
+              <div class="place-sub">{{ item.placeName }}</div>
+              <div class="place-main">
+                <span class="floor-zone">{{ item.locationDetails.split('|')[0] }} | {{
+                  item.locationDetails.split('|')[1] }}</span>
+                <span class="slot-badge"> | {{ item.locationDetails.split('|')[2] }}</span>
+              </div>
+            </div>
+            <div class="car-box text-right">
+              <div class="car-model"><ion-icon name="car"></ion-icon> {{ item.carBrand }}</div>
+              <div class="plate-text">{{ item.licensePlate }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer footer-blue">
+          <div class="price-section">
+            <ion-icon name="wallet-outline"></ion-icon> ฿{{ item.price }}
+          </div>
+          <div class="action-btn">
+            ชำระเงินตอนนี้ ->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Monthly Bookings -->
+    <div class="section-group">
+      <div class="section-header">
+        <h3>รายการสมาชิกรายเดือน</h3>
+      </div>
+      <!-- Empty State for this section if needed, or just let it collapse -->
+      <div *ngIf="monthlyBookings.length === 0" class="mini-empty">
+        - ไม่พบรายการ -
+      </div>
+    </div>
+
+    <!-- 4. Monthly Night Bookings -->
+    <div class="section-group">
+      <div class="section-header">
+        <h3>รายการสมาชิกรายเดือนเฉพาะกลางคืน(18:00-08:00 น.)</h3>
+      </div>
+      <div *ngFor="let item of nightlyBookings" class="modern-card highlight-border">
+        <div class="card-body">
+          <div class="card-row top-row">
+            <div class="status-box text-blue"> <!-- Blue for active membership -->
+              <ion-icon name="car-sport"></ion-icon> {{ item.statusLabel }}
+            </div>
+            <div class="time-box text-right">
+              <div class="date-text text-blue-dark">{{ item.periodLabel }}</div>
+              <div class="time-text">{{ item.timeDetailLabel ? item.timeDetailLabel : (item.bookingTime | date:'HH:mm')
+                + ' - ' + (item.endTime | date:'HH:mm') + ' น.' }}</div>
+            </div>
+          </div>
+          <div class="card-row bottom-row">
+            <div class="location-box">
+              <div class="place-sub">{{ item.placeName }}</div>
+              <div class="place-main">
+                <span class="floor-zone">{{ item.locationDetails.split('|')[0] }} | {{
+                  item.locationDetails.split('|')[1] }}</span>
+                <span class="slot-badge"> | {{ item.locationDetails.split('|')[2] }}</span>
+              </div>
+            </div>
+            <div class="car-box text-right">
+              <div class="car-model"><ion-icon name="car"></ion-icon> {{ item.carBrand }}</div>
+              <div class="plate-text">{{ item.licensePlate }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer footer-white">
+          <div class="price-section text-blue">
+            <ion-icon name="wallet-outline"></ion-icon> ฿{{ item.price | number }}
+          </div>
+          <div class="action-btn text-link">
+            ชำระเงินสำเร็จแล้ว
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>
